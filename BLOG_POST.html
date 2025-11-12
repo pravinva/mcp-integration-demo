@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reducing Integration Complexity with Databricks MCP</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            color: #333;
+        }
+        h1 { font-size: 2.2em; margin-bottom: 0.5em; border-bottom: 2px solid #e0e0e0; padding-bottom: 0.3em; }
+        h2 { font-size: 1.8em; margin-top: 1.5em; color: #2a2a2a; }
+        h3 { font-size: 1.4em; margin-top: 1.2em; color: #3a3a3a; }
+        pre { background: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; border-left: 4px solid #FF3621; }
+        code { font-family: 'Monaco', 'Courier New', monospace; font-size: 0.9em; }
+        ul, ol { padding-left: 2em; }
+        .author { margin-top: 3em; padding-top: 2em; border-top: 1px solid #e0e0e0; font-style: italic; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>Reducing Integration Complexity with Databricks Model Context Protocol</h1>
+
+    <p><em>1,656 words | Professional Solutions Architect Perspective</em></p>
+
+    <p>Open the markdown file (<code>BLOG_POST.md</code>) in your preferred markdown viewer for the full formatted article, or paste this URL in Chrome:</p>
+
+    <p><strong>file:///Users/pravin.varma/Documents/Demo/mcp-integration-blog/BLOG_POST.md</strong></p>
+
+    <p>This HTML preview directs you to the source markdown. For best viewing experience, use a markdown editor like Typora, VSCode with markdown preview, or online viewers like dillinger.io</p>
+
+    <hr>
+
+    <p><strong>Quick Summary:</strong></p>
+    <ul>
+        <li>Traditional integration: M platforms × N data sources = M×N implementations (12 integrations)</li>
+        <li>MCP approach: 1 universal client + M wrappers + N servers = M+N components (8 components)</li>
+        <li>Reference implementation: 329-line universal client used by Slack, Teams, CLI, Claude Code</li>
+        <li>Code reduction: 40-60% fewer lines, centralized maintenance</li>
+        <li>Data sources: Databricks Genie, Vector Search, Unity Catalog Functions</li>
+    </ul>
+
+    <p class="author">Article prepared for Databricks field enablement and customer reference implementations.</p>
+</body>
+</html>

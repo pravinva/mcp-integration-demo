@@ -1,0 +1,19 @@
+# Universal MCP Client dependencies
+databricks-sdk>=0.20.0
+databricks-mcp>=0.1.0
+python-dotenv>=1.0.0
+
+# REST API dependencies
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.4.0
+
+# Production additions (optional)
+# slowapi>=0.1.9  # Rate limiting
+# prometheus-client>=0.18.0  # Metrics
+# python-jose>=3.3.0  # JWT tokens
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.25.0  # For testing FastAPI

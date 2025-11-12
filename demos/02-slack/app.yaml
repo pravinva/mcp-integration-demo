@@ -1,0 +1,56 @@
+# Databricks Apps configuration for Slack bot
+# Deploy: databricks apps deploy genie-slack-bot
+
+command: ["python", "slack_bot.py"]
+
+resources:
+  cpu: "1"
+  memory: "2Gi"
+
+env:
+  # Slack credentials (from secrets)
+  - name: SLACK_BOT_TOKEN
+    valueFrom:
+      secretKeyRef:
+        key: slack-bot-token
+        
+  - name: SLACK_APP_TOKEN
+    valueFrom:
+      secretKeyRef:
+        key: slack-app-token
+  
+  # Databricks host (automatically provided)
+  - name: DATABRICKS_HOST
+    valueFrom:
+      databricksHost: true
+  
+  # OAuth credentials (from secrets)
+  - name: DATABRICKS_OAUTH_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        key: databricks-oauth-client-id
+        
+  - name: DATABRICKS_OAUTH_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        key: databricks-oauth-client-secret
+  
+  # Data source IDs
+  - name: GENIE_SPACE_ID
+    value: "your-genie-space-id"
+    
+  - name: VECTOR_SEARCH_INDEX_ID
+    value: "demo_retail.ecommerce.documentation_index"
+    
+  - name: UC_FUNCTION_NAME
+    value: "demo_retail.ecommerce.calculate_discount"
+
+# Health check
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  
+readinessProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 5
+

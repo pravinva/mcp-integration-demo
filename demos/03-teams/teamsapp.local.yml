@@ -1,0 +1,61 @@
+# Teams Toolkit Local Development Configuration
+
+version: 1.0.0
+
+provision:
+  - uses: teamsApp/create
+    with:
+      name: Genie Bot-local
+    writeToEnvironmentFile:
+      teamsAppId: TEAMS_APP_ID
+
+  - uses: botAadApp/create
+    with:
+      name: Genie Bot-local
+    writeToEnvironmentFile:
+      botId: BOT_ID
+      botPassword: SECRET_BOT_PASSWORD
+
+  - uses: teamsApp/validateManifest
+    with:
+      manifestPath: ./appPackage/manifest.json
+
+  - uses: teamsApp/zipAppPackage
+    with:
+      manifestPath: ./appPackage/manifest.json
+      outputZipPath: ./appPackage/build/appPackage.local.zip
+      outputJsonPath: ./appPackage/build/manifest.local.json
+
+  - uses: teamsApp/update
+    with:
+      appPackagePath: ./appPackage/build/appPackage.local.zip
+
+deploy:
+  - uses: prerequisite/install
+    with:
+      devCert:
+        trust: true
+
+  - uses: file/createOrUpdateEnvironmentFile
+    with:
+      target: ./env/.env.local
+      envs:
+        BOT_ID: ${{BOT_ID}}
+        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        BOT_ENDPOINT: http://localhost:3978
+        BOT_DOMAIN: localhost
+
+# Local debug configuration
+localDebug:
+  - uses: cli/runNpmCommand
+    with:
+      args: install
+
+  - uses: file/createOrUpdateEnvironmentFile
+    with:
+      target: ./env/.env.local
+      envs:
+        BOT_ID: ${{BOT_ID}}
+        BOT_PASSWORD: ${{SECRET_BOT_PASSWORD}}
+        BOT_ENDPOINT: http://localhost:3978
+        BOT_DOMAIN: localhost

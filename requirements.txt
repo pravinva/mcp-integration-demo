@@ -1,0 +1,24 @@
+# Core Dependencies
+databricks-sdk==0.35.0
+databricks-mcp==0.4.0
+python-dotenv==1.0.0
+
+# MCP Server (for Claude Desktop)
+mcp>=0.9.1
+
+# Async support
+aiohttp==3.9.5
+
+# Slack
+slack-bolt==1.19.0
+slack-sdk==3.27.1
+
+# Teams
+botbuilder-core==4.16.1
+botbuilder-schema==4.16.1
+
+# Development
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.12.1
+

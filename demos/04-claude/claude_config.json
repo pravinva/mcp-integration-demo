@@ -1,0 +1,28 @@
+{
+  "_comment": "Copy this to Claude Desktop config location",
+  "_mac_location": "~/Library/Application Support/Claude/claude_desktop_config.json",
+  "_windows_location": "%APPDATA%\\Claude\\claude_desktop_config.json",
+  "_linux_location": "~/.config/Claude/claude_desktop_config.json",
+  
+  "mcpServers": {
+    "databricks-genie": {
+      "command": "python",
+      "args": [
+        "/absolute/path/to/mcp-integration-blog/demos/04-claude/mcp_server.py"
+      ],
+      "env": {
+        "DATABRICKS_PROFILE": "DEFAULT",
+        "GENIE_SPACE_ID": "your-genie-space-id",
+        "VECTOR_SEARCH_INDEX_ID": "demo_retail.ecommerce.documentation_index",
+        "UC_FUNCTION_NAME": "demo_retail.ecommerce.calculate_discount",
+        "USE_MOCK_MCP": "false"
+      },
+      "_comment_oauth": "Optional: Use OAuth instead of ~/.databrickscfg",
+      "_oauth_env": {
+        "DATABRICKS_HOST": "https://your-workspace.cloud.databricks.com",
+        "DATABRICKS_OAUTH_CLIENT_ID": "your-oauth-client-id",
+        "DATABRICKS_OAUTH_CLIENT_SECRET": "your-oauth-client-secret"
+      }
+    }
+  }
+}

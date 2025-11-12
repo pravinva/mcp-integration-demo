@@ -1,0 +1,12 @@
+# Universal MCP Client dependencies
+databricks-sdk>=0.20.0
+databricks-mcp>=0.1.0
+python-dotenv>=1.0.0
+
+# RAG application dependencies
+# Note: This minimal demo doesn't use an LLM
+# Production would add: openai, anthropic, or databricks-genai
+
+# For testing/development
+pytest>=7.4.0
+pytest-asyncio>=0.21.0

@@ -1,0 +1,16 @@
+# Universal MCP Client dependencies
+databricks-sdk>=0.20.0
+databricks-mcp>=0.1.0
+python-dotenv>=1.0.0
+
+# Data processing (optional - for production enhancements)
+# pyspark>=3.5.0
+# pandas>=2.0.0
+# pyarrow>=13.0.0
+
+# Monitoring (optional)
+# prometheus-client>=0.18.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
