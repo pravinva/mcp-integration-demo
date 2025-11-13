@@ -26,9 +26,15 @@ def format_genie_response(raw_response: str, platform: str = "teams") -> str:
     Returns:
         Formatted human-readable response
     """
+    # Debug logging
+    print(f"🔍 [FORMATTER] Raw response type: {type(raw_response)}")
+    print(f"🔍 [FORMATTER] Raw response length: {len(raw_response) if raw_response else 0}")
+    print(f"🔍 [FORMATTER] Raw response first 200 chars: {raw_response[:200] if raw_response else 'None'}")
+
     try:
         # First parse - outer JSON with "content" field
         outer = json.loads(raw_response)
+        print(f"✅ [FORMATTER] Successfully parsed outer JSON")
 
         # Extract the content field which contains the actual Genie response
         if "content" in outer:
@@ -100,13 +106,28 @@ def format_genie_response(raw_response: str, platform: str = "teams") -> str:
         return result_text
         
     except json.JSONDecodeError as e:
-        # If it's not JSON, return as-is (might be an error message)
+        # JSON parsing failed - raw_response might be plain text or malformed JSON
+        # Try to clean and return it as plain text
         if raw_response and raw_response.strip():
-            return f"_JSON parse error: {str(e)}_\n{raw_response[:300]}"
+            # Check if it starts with common JSON characters but is malformed
+            cleaned = raw_response.strip()
+            if cleaned.startswith('{') or cleaned.startswith('['):
+                # Looks like JSON but failed to parse - show more detail
+                return f"⚠️ Received malformed JSON response:\n\n{cleaned[:500]}"
+            else:
+                # Not JSON at all - just return the plain text
+                return cleaned
         return "Empty response from Genie"
     except Exception as e:
         # If formatting fails, return the original with a note
-        return f"_Note: Unable to format response: {str(e)}_\n\n{raw_response[:500]}"
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"❌ Formatter error: {error_details}")
+
+        # Try to return something useful
+        if raw_response and raw_response.strip():
+            return raw_response.strip()[:500]
+        return f"Error formatting response: {str(e)}"
 
 
 def format_uc_function_response(raw_response: str, platform: str = "teams") -> str:
