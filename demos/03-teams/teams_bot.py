@@ -33,7 +33,7 @@ from shared.config import (
     VECTOR_SEARCH_INDEX_ID,
     UC_FUNCTION_NAME
 )
-from shared.genie_formatter import format_genie_response, format_uc_function_response
+from shared.genie_formatter import format_genie_response, format_uc_function_response, format_vector_search_response
 
 # Bot Framework Adapter
 SETTINGS = BotFrameworkAdapterSettings(
@@ -108,11 +108,13 @@ Start with "calculate":
             # Vector Search
             try:
                 query = user_message[7:]
-                response = await mcp_client.search_docs(
+                raw_response = await mcp_client.search_docs(
                     VECTOR_SEARCH_INDEX_ID,
                     query,
                     num_results=3
                 )
+                # Format the vector search response using shared formatter
+                response = format_vector_search_response(raw_response, platform="teams")
                 prefix = "📚 **Search Results:**\n\n"
             except Exception as search_error:
                 import traceback

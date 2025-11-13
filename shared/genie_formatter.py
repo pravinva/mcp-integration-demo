@@ -130,6 +130,66 @@ def format_genie_response(raw_response: str, platform: str = "teams") -> str:
         return f"Error formatting response: {str(e)}"
 
 
+def format_vector_search_response(raw_response: str, platform: str = "teams") -> str:
+    """
+    Parse and format Vector Search JSON response into human-readable text.
+
+    Vector Search returns JSON array of documents with title, content, category, etc.
+
+    Args:
+        raw_response: Raw JSON response from Vector Search MCP
+        platform: "slack" or "teams" (affects markdown formatting)
+
+    Returns:
+        Formatted human-readable response showing top search results
+    """
+    try:
+        # Parse JSON array or object
+        if raw_response.strip().startswith('['):
+            results = json.loads(raw_response)
+        else:
+            # Maybe wrapped in an object
+            data = json.loads(raw_response)
+            results = data.get('results', data.get('data', []))
+
+        if not results:
+            return "_No results found for your search._"
+
+        # Platform-specific markdown formatting
+        bold_start = "**" if platform == "teams" else "*"
+        bold_end = "**" if platform == "teams" else "*"
+
+        formatted = []
+
+        for i, doc in enumerate(results[:3], 1):  # Show top 3
+            if isinstance(doc, dict):
+                title = doc.get('title', 'Untitled')
+                content = doc.get('content', '')
+                category = doc.get('category', '')
+
+                # Create formatted result
+                result_text = f"{bold_start}{i}. {title}{bold_end}"
+
+                if category:
+                    result_text += f"\n_{category}_"
+
+                # Add excerpt (first 200 chars for cleaner display)
+                if content:
+                    excerpt = content[:200].strip()
+                    if len(content) > 200:
+                        excerpt += "..."
+                    result_text += f"\n\n{excerpt}"
+
+                formatted.append(result_text)
+
+        return "\n\n".join(formatted)
+
+    except json.JSONDecodeError as e:
+        return f"Error parsing search results: {str(e)}\n\n{raw_response[:200]}"
+    except Exception as e:
+        return f"Error formatting search results: {str(e)}"
+
+
 def format_uc_function_response(raw_response: str, platform: str = "teams") -> str:
     """
     Parse and format UC Function JSON response into human-readable text.
