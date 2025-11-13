@@ -28,6 +28,7 @@ from shared.config import (
     UC_FUNCTION_NAME,
     validate_config
 )
+from shared.genie_formatter import format_genie_response, format_uc_function_response
 import json
 
 # Initialize Slack app
@@ -40,131 +41,9 @@ mcp_client = create_mcp_client()
 conversations = {}
 
 
-def format_genie_response(raw_response: str) -> str:
-    """
-    Parse and format Genie's JSON response into human-readable text.
-
-    Genie MCP returns nested JSON: {"content": "{...escaped JSON...}"}
-    We need to unpack this double encoding.
-    """
-    try:
-        # First parse - outer JSON with "content" field
-        outer = json.loads(raw_response)
-
-        # Extract the content field which contains the actual Genie response as a JSON string
-        if "content" in outer:
-            # Second parse - the actual Genie data
-            data = json.loads(outer["content"])
-        else:
-            # If no content field, assume it's already the inner data
-            data = outer
-
-        formatted = []
-
-        # Show the SQL query that was generated
-        if "query" in data:
-            formatted.append(f"📊 *SQL Query:*\n```{data['query']}```\n")
-
-        # Extract and format the results
-        if "statement_response" in data and "result" in data["statement_response"]:
-            result = data["statement_response"]["result"]
-            manifest = data["statement_response"]["manifest"]
-
-            if "data_array" in result and result["data_array"]:
-                # Get column names
-                columns = [col["name"] for col in manifest["schema"]["columns"]]
-
-                formatted.append("*Results:*")
-
-                # Format each row
-                for row in result["data_array"]:
-                    values = row.get("values", [])
-                    row_text = []
-                    for i, col_name in enumerate(columns):
-                        if i < len(values):
-                            value = values[i].get("string_value", "N/A")
-                            row_text.append(f"• *{col_name}:* {value}")
-                    formatted.append("\n".join(row_text))
-
-                # Add row count
-                total_rows = manifest.get("total_row_count", 0)
-                formatted.append(f"\n_({total_rows} row{'s' if total_rows != 1 else ''} returned)_")
-            else:
-                formatted.append("_No results found_")
-
-        result_text = "\n".join(formatted)
-
-        # Safety check - ensure we return something valid
-        if not result_text or result_text.strip() == "":
-            return f"Received response but couldn't format it. Raw: {raw_response[:200]}"
-
-        return result_text
-
-    except json.JSONDecodeError as e:
-        # If it's not JSON, return as-is (might be an error message)
-        if raw_response and raw_response.strip():
-            return f"_JSON parse error: {str(e)}_\n{raw_response[:300]}"
-        return "Empty response from Genie"
-    except Exception as e:
-        # If formatting fails, return the original with a note
-        return f"_Note: Unable to format response: {str(e)}_\n\n{raw_response[:500]}"
-
-
-def format_uc_function_response(raw_response: str) -> str:
-    """
-    Parse and format UC Function JSON response into human-readable text.
-
-    UC Functions return JSON with nested structure:
-    {"columns": ["output"], "rows": [[{"schema": [...], "values": [...]}]]}
-    """
-    try:
-        data = json.loads(raw_response)
-
-        formatted = ["*Function Result:*"]
-
-        # UC Functions wrap results in rows -> [0] -> schema + values
-        if "rows" in data and len(data["rows"]) > 0:
-            # Get the first (and usually only) row
-            first_row = data["rows"][0]
-
-            if isinstance(first_row, list) and len(first_row) > 0:
-                # The actual result is in first_row[0]
-                result_obj = first_row[0]
-
-                if isinstance(result_obj, dict):
-                    # Extract schema and values
-                    schema = result_obj.get("schema", [])
-                    values = result_obj.get("values", [])
-
-                    # Format each field
-                    for i, field_def in enumerate(schema):
-                        field_name = field_def.get("name", f"field_{i}")
-                        if i < len(values):
-                            value = values[i]
-                            # Format the value nicely
-                            if isinstance(value, float):
-                                # Format numbers nicely
-                                if field_name.endswith("percentage"):
-                                    formatted.append(f"• *{field_name}:* {value}%")
-                                elif "amount" in field_name.lower():
-                                    formatted.append(f"• *{field_name}:* ${value:,.2f}")
-                                else:
-                                    formatted.append(f"• *{field_name}:* {value}")
-                            else:
-                                formatted.append(f"• *{field_name}:* {value}")
-
-                    return "\n".join(formatted)
-
-        # If we couldn't parse the structure, return a generic success message
-        formatted.append("_Function executed successfully_")
-        return "\n".join(formatted)
-
-    except json.JSONDecodeError as e:
-        # Not JSON, return as-is
-        return raw_response
-    except Exception as e:
-        # Show error for debugging
-        return f"_Unable to format response: {str(e)}_\n\n```{raw_response[:300]}```"
+# REMOVED: format_genie_response() - now imported from shared.genie_formatter
+# REMOVED: format_uc_function_response() - now imported from shared.genie_formatter
+# This eliminates code duplication and ensures both Slack and Teams bots use the same formatting logic
 
 
 def format_vector_search_response(raw_response: str):
@@ -304,8 +183,8 @@ async def handle_mention(event, say):
                 UC_FUNCTION_NAME,
                 {"order_amount": amount, "customer_segment": segment}
             )
-            # Format the UC function response
-            response = format_uc_function_response(response)
+            # Format the UC function response using shared formatter
+            response = format_uc_function_response(response, platform="slack")
             prefix = "💰 *Calculation:*"
         except (IndexError, ValueError):
             response = "Usage: calculate <amount> <segment>\nExample: calculate 50000 Enterprise"
@@ -320,8 +199,8 @@ async def handle_mention(event, say):
             conv_id
         )
         conversations[thread_ts] = new_conv_id
-        # Format the Genie response nicely
-        response = format_genie_response(response)
+        # Format the Genie response nicely using shared formatter
+        response = format_genie_response(response, platform="slack")
         prefix = "🧞 *Genie:*"
     
     # Send response in thread with proper text fallback
@@ -438,8 +317,8 @@ Start with "calculate" or "discount":
                     UC_FUNCTION_NAME,
                     {"order_amount": amount, "customer_segment": segment}
                 )
-                # Format the UC function response
-                response = format_uc_function_response(response)
+                # Format the UC function response using shared formatter
+                response = format_uc_function_response(response, platform="slack")
             except (IndexError, ValueError):
                 response = "Usage: calculate <amount> <segment>\nExample: calculate 50000 Enterprise"
         else:
@@ -451,8 +330,8 @@ Start with "calculate" or "discount":
                 conv_id
             )
             conversations[ts] = new_conv_id
-            # Format the Genie response nicely
-            response = format_genie_response(response)
+            # Format the Genie response nicely using shared formatter
+            response = format_genie_response(response, platform="slack")
 
         # Safety check - ensure response is not empty
         if not response or not response.strip():
