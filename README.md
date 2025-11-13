@@ -10,6 +10,47 @@ This repository demonstrates an alternative: implement a single universal client
 
 **Key Finding:** While this approach introduces modest overhead initially (~7% more code), it delivers 40-50% reduction in maintenance effort and 50-60% faster development of new platform integrations.
 
+## Recent Improvements
+
+### Response Formatting Enhancements (Latest)
+
+**Unified Response Formatting**
+- Consolidated duplicate formatting logic from Slack and Teams bots into `shared/genie_formatter.py`
+- Eliminated 133 lines of duplicate code between platform implementations
+- Both bots now use identical formatting logic with platform-specific markdown
+
+**Enhanced Genie Response Handling**
+- ✅ Fixed JSON parse error when Genie returns plain text responses (metadata, table descriptions)
+- ✅ Now handles both SQL query results (JSON) and informational responses (plain text)
+- ✅ Graceful error handling with user-friendly messages
+
+**Vector Search Formatting**
+- ✅ Teams bot now displays formatted search results instead of raw JSON
+- ✅ Shows top 3 results with title, category, and content excerpt (200 chars)
+- ✅ Platform-agnostic formatter works for both Slack and Teams markdown
+
+**Benefits of Consolidation:**
+- **Maintainability:** Single source of truth for response formatting
+- **Consistency:** Identical behavior across Slack and Teams platforms
+- **Reliability:** Bugs fixed once benefit all platforms
+- **Development Speed:** New formatting features automatically work on all platforms
+
+### Teams Bot Improvements
+
+The Teams bot (`demos/03-teams/teams_bot.py`) now includes:
+- Formatted vector search results with proper markdown
+- Support for plain text responses from Genie
+- Unified error handling and response formatting
+- Debug logging for troubleshooting
+
+### Slack Bot Improvements
+
+The Slack bot (`demos/02-slack/slack_bot.py`) now includes:
+- Removed 133 lines of duplicate code (formatters moved to shared module)
+- Support for plain text responses from Genie
+- Consistent error handling across all response types
+- Slack-specific block formatting for rich message display
+
 ## Architecture
 
 ```
