@@ -11,25 +11,37 @@ import json
 def format_genie_response(raw_response: str, platform: str = "teams") -> str:
     """
     Parse and format Genie's JSON response into human-readable text.
-    
+
     Genie MCP returns nested JSON: {"content": "{...escaped JSON...}"}
     We need to unpack this double encoding.
-    
+
+    However, Genie can also return:
+    - Plain text responses (metadata, table descriptions, help text)
+    - Error messages
+
     Args:
         raw_response: Raw JSON response from Genie MCP
         platform: "slack" or "teams" (affects markdown formatting)
-    
+
     Returns:
         Formatted human-readable response
     """
     try:
         # First parse - outer JSON with "content" field
         outer = json.loads(raw_response)
-        
-        # Extract the content field which contains the actual Genie response as a JSON string
+
+        # Extract the content field which contains the actual Genie response
         if "content" in outer:
-            # Second parse - the actual Genie data
-            data = json.loads(outer["content"])
+            content_value = outer["content"]
+
+            # Check if content is a JSON string or plain text
+            try:
+                # Try to parse as JSON (SQL results)
+                data = json.loads(content_value)
+            except (json.JSONDecodeError, TypeError):
+                # Not JSON - it's plain text (metadata, descriptions, etc.)
+                # Just return the plain text content
+                return content_value.strip()
         else:
             # If no content field, assume it's already the inner data
             data = outer
