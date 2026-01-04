@@ -117,7 +117,43 @@ async def handle_mention(event, say):
     thread_ts = event.get("thread_ts") or event["ts"]
     
     # Determine command type
-    if question.lower().startswith("search "):
+    if question.lower().startswith("list clusters"):
+        # Databricks CLI: List clusters
+        try:
+            response = await mcp_client.invoke_databricks_cli("clusters", ["list"])
+            prefix = "🖥️ *Clusters:*"
+        except Exception as e:
+            response = f"Error listing clusters: {str(e)}"
+            prefix = "❌ *Error:*"
+
+    elif question.lower().startswith("list jobs"):
+        # Databricks CLI: List jobs
+        try:
+            response = await mcp_client.invoke_databricks_cli("jobs", ["list"])
+            prefix = "⚙️ *Jobs:*"
+        except Exception as e:
+            response = f"Error listing jobs: {str(e)}"
+            prefix = "❌ *Error:*"
+
+    elif question.lower().startswith("list warehouses"):
+        # Databricks CLI: List warehouses
+        try:
+            response = await mcp_client.invoke_databricks_cli("warehouses", ["list"])
+            prefix = "🏢 *Warehouses:*"
+        except Exception as e:
+            response = f"Error listing warehouses: {str(e)}"
+            prefix = "❌ *Error:*"
+
+    elif question.lower().startswith("explore workspace") or question.lower() == "explore":
+        # Databricks CLI: Explore workspace
+        try:
+            response = await mcp_client.explore_workspace()
+            prefix = "🔍 *Workspace Info:*"
+        except Exception as e:
+            response = f"Error exploring workspace: {str(e)}"
+            prefix = "❌ *Error:*"
+
+    elif question.lower().startswith("search "):
         # Vector Search
         query = question[7:]
         try:

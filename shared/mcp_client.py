@@ -363,6 +363,149 @@ class UniversalMCPClient:
         # Uses the SAME query() method again!
         return await self.query(server_url, tool_name, parameters)
 
+    async def explore_workspace(self) -> str:
+        """
+        Explore Databricks workspace to discover available resources.
+
+        Returns:
+            JSON string with workspace information including:
+            - Catalogs and schemas
+            - Clusters
+            - Jobs
+            - SQL Warehouses
+        """
+        from shared.config import DATABRICKS_CLI_MCP_URL
+        import httpx
+
+        logger.info("🔍 Exploring Databricks workspace...")
+
+        try:
+            # Get auth token from workspace client
+            auth_header = self.workspace_client.config.authenticate()
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{DATABRICKS_CLI_MCP_URL}/mcp/explore",
+                    headers={"Authorization": auth_header.get("Authorization")},
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                result = response.json()
+
+                logger.info(f"✅ Workspace explored successfully")
+                return result.get("content", [{}])[0].get("text", "No data")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to explore workspace: {str(e)}")
+            return f"Error exploring workspace: {str(e)}"
+
+    async def invoke_databricks_cli(
+        self,
+        category: str,
+        args: list[str]
+    ) -> str:
+        """
+        Execute Databricks CLI commands.
+
+        Args:
+            category: CLI category (e.g., "clusters", "jobs", "warehouses")
+            args: Command arguments (e.g., ["list"], ["get", "--id", "123"])
+
+        Returns:
+            CLI command output
+
+        Examples:
+            # List clusters
+            await invoke_databricks_cli("clusters", ["list"])
+
+            # Get job details
+            await invoke_databricks_cli("jobs", ["get", "--id", "123"])
+
+            # List SQL warehouses
+            await invoke_databricks_cli("warehouses", ["list"])
+        """
+        from shared.config import DATABRICKS_CLI_MCP_URL
+        import httpx
+
+        logger.info(f"🔧 Invoking Databricks CLI: {category} {' '.join(args)}")
+
+        try:
+            # Get auth token from workspace client
+            auth_header = self.workspace_client.config.authenticate()
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{DATABRICKS_CLI_MCP_URL}/mcp/invoke",
+                    headers={"Authorization": auth_header.get("Authorization")},
+                    json={
+                        "name": "invoke_databricks_cli",
+                        "arguments": {
+                            "category": category,
+                            "args": args
+                        }
+                    },
+                    timeout=30.0
+                )
+                response.raise_for_status()
+                result = response.json()
+
+                logger.info(f"✅ CLI command executed successfully")
+                return result.get("content", [{}])[0].get("text", "No output")
+
+        except Exception as e:
+            logger.error(f"❌ CLI command failed: {str(e)}")
+            return f"Error: {str(e)}"
+
+    async def query_sql(
+        self,
+        warehouse_id: str,
+        query: str
+    ) -> str:
+        """
+        Execute SQL query using SQL Warehouse.
+
+        Args:
+            warehouse_id: SQL Warehouse ID
+            query: SQL query to execute
+
+        Returns:
+            Query results as formatted string
+
+        Example:
+            await query_sql("abc123", "SELECT * FROM main.sales LIMIT 10")
+        """
+        from shared.config import DATABRICKS_CLI_MCP_URL
+        import httpx
+
+        logger.info(f"🗃️ Executing SQL query: {query[:100]}...")
+
+        try:
+            # Get auth token from workspace client
+            auth_header = self.workspace_client.config.authenticate()
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{DATABRICKS_CLI_MCP_URL}/mcp/invoke",
+                    headers={"Authorization": auth_header.get("Authorization")},
+                    json={
+                        "name": "execute_parameterized_sql",
+                        "arguments": {
+                            "warehouse_id": warehouse_id,
+                            "query": query
+                        }
+                    },
+                    timeout=60.0
+                )
+                response.raise_for_status()
+                result = response.json()
+
+                logger.info(f"✅ SQL query executed successfully")
+                return result.get("content", [{}])[0].get("text", "No results")
+
+        except Exception as e:
+            logger.error(f"❌ SQL query failed: {str(e)}")
+            return f"Error: {str(e)}"
+
 
 def create_mcp_client() -> UniversalMCPClient:
     """

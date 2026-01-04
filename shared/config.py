@@ -42,6 +42,12 @@ MICROSOFT_APP_PASSWORD = os.getenv("MICROSOFT_APP_PASSWORD")
 USE_MOCK_MCP = os.getenv("USE_MOCK_MCP", "false").lower() == "true"
 
 
+# Databricks CLI MCP Server URL
+DATABRICKS_CLI_MCP_URL = os.getenv(
+    "DATABRICKS_CLI_MCP_URL",
+    "https://databricks-cli-mcp-1444828305810485.aws.databricksapps.com"
+)
+
 # MCP Server URLs - Just configuration!
 MCP_SERVERS = {
     "genie": {
@@ -60,10 +66,15 @@ MCP_SERVERS = {
     "uc_functions": {
         # URL format: /api/2.0/mcp/functions/{catalog}/{schema}
         # Extract catalog.schema from UC_FUNCTION_NAME
-        "url": (f"{DATABRICKS_HOST}/api/2.0/mcp/functions/{UC_FUNCTION_NAME.split('.')[0]}/{UC_FUNCTION_NAME.split('.')[1]}" 
+        "url": (f"{DATABRICKS_HOST}/api/2.0/mcp/functions/{UC_FUNCTION_NAME.split('.')[0]}/{UC_FUNCTION_NAME.split('.')[1]}"
                 if DATABRICKS_HOST and '.' in UC_FUNCTION_NAME else None),
         "tools": ["execute", "describe"],
         "description": "Execute governed Python/SQL functions"
+    },
+    "databricks_cli": {
+        "url": DATABRICKS_CLI_MCP_URL,
+        "tools": ["explore_workspace", "invoke_databricks_cli", "query_sql"],
+        "description": "Execute Databricks CLI commands and SQL queries"
     }
 }
 
