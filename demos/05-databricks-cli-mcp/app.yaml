@@ -1,0 +1,15 @@
+name: databricks-cli-mcp
+
+command:
+  - "python"
+  - "mcp_server.py"
+
+env:
+  - name: "DATABRICKS_APP_PORT"
+    value: "8000"
+
+resources:
+  cpu: "1"
+  memory: "2Gi"
+
+runtime: python_3.11
